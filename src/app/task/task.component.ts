@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import {NgFor} from '@angular/common';
+import { Component, ViewChild } from '@angular/core';
+import { ModalDirective } from 'ngx-bootstrap/modal';
 import {
   CdkDragDrop,
   CdkDrag,
@@ -16,6 +16,8 @@ import {
 })
 
 export class TaskComponent {
+  @ViewChild('childModal', { static: false }) childModal?: ModalDirective;
+  formData: { name: string, email: string, message: string, dateFrom:string } = { name: '', email: '', message: '', dateFrom: '' };
   todo = ['Get to work', 'Pick up groceries', 'Go home', 'Fall asleep'];
   done = ['Get up', 'Brush teeth', 'Take a shower', 'Check e-mail', 'Walk dog'];
   list: any[] = [];
@@ -95,5 +97,18 @@ export class TaskComponent {
         this.list.push(taskTemp);
     })
     console.log(this.list);
+  }
+
+  submitForm() {
+    // Aquí puedes manejar el envío del formulario
+    console.log('Formulario enviado:', this.formData);
+  }
+
+  showChildModal(): void {
+    this.childModal?.show();
+  }
+
+  hideChildModal(): void {
+    this.childModal?.hide();
   }
 }
