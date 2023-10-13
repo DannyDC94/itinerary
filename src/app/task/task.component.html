@@ -1,0 +1,29 @@
+<header>
+  <div class="row">
+    <div class="col-10">
+      <h2>Itinerario</h2>
+    </div>
+    <div class="col-2">
+      <button type="button" class="btn btn-primary">
+        Nueva actividad
+      </button>
+    </div>
+  </div>
+</header>
+<nav class="sidebar active">
+  <h1>Landscape</h1>
+</nav>
+<main>
+  <div class="container-drop" cdkDropListGroup>
+    <div class="example-container" *ngFor="let item of list">
+      <h2>{{item.title || 'Sin fecha a asignar'}}</h2>
+      <div
+        cdkDropList
+        [cdkDropListData]="item.task"
+        class="example-list"
+        (cdkDropListDropped)="drop($event)">
+        <div class="example-box" *ngFor="let t of item.task" cdkDrag>{{t.title}}</div>
+      </div>
+    </div>
+  </div>
+</main>
