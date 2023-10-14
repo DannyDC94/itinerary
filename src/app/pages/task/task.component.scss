@@ -1,7 +1,7 @@
 header {
   background-color: #ffffff;
   color: #000000;
-  padding: 2rem;
+  padding: 2rem 2rem 1rem;
   width: 80%;
   float: right;
   border-bottom: 2px solid #e0dfdf;
@@ -13,7 +13,7 @@ header {
   position: fixed;
   top: 0;
   left: -250px;
-  background-color: #0d6efd;
+  background-color: var(--color-primary);
   color: #ffffff;
   transition: left 0.3s;
   text-align: center;
@@ -138,12 +138,21 @@ main {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.full-screen-modal {
-  height: 100vh !important;
-  width: 100vw !important;
-  top: 0;
-  left: 0;
-  margin: 0;
-  background-color: #ffffff;
-  float: right;
+//Modal
+.modal-content {
+  height: 100%;
+}
+
+.footer-btn {
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.container-btn {
+  text-align: right;
+}
+
+.btn-modal {
+  margin: 1rem;
 }

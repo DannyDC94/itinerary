@@ -1,0 +1,89 @@
+<header>
+  <div class="row">
+    <div class="col-10">
+      <h2>Itinerario</h2>
+    </div>
+    <div class="col-2">
+      <button type="button" class="btn btn-primary" (click)="openModal(template)">
+        Nueva actividad
+      </button>
+    </div>
+  </div>
+</header>
+<nav class="sidebar active">
+  <h1>Landscape</h1>
+</nav>
+<main>
+  <div class="container-drop" cdkDropListGroup>
+    <div class="example-container" *ngFor="let item of list">
+      <h2>{{item.title || 'Sin fecha a asignar'}}</h2>
+      <div
+        cdkDropList
+        [cdkDropListData]="item.task"
+        class="example-list"
+        (cdkDropListDropped)="drop($event)">
+        <div class="example-box" style="display: inline-block; width: 100%" *ngFor="let t of item.task" cdkDrag>
+          <div>{{t.title}}</div>
+          <div>{{t.hourTask}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!--Modal-->
+<ng-template #template>
+  <div class="modal-header">
+    <h4 id="dialog-child-name" class="modal-title pull-left">Agregar nueva actividad</h4>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="submitForm()" #contactForm="ngForm">
+      <div class="row">
+        <div class="form-group">
+          <label for="name">Nombre de la actividad</label>
+          <input type="text" id="name" name="name" class="form-control" [(ngModel)]="formData.name" required>
+        </div>
+        <div class="form-group">
+          <label for="startDate">Fecha de inicio</label>
+          <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
+            <input type="text"
+                   id="startDate"
+                   placeholder="Datepicker"
+                   class="form-control"
+                   (bsValueChange)="onDateChanged($event, 'start')"
+                   [minDate]="minDate"
+                   [maxDate]="maxDate"
+                   bsDatepicker
+                   [bsConfig]="configDateTimePicker">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="endDate">Fecha de finalizacion</label>
+          <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
+            <input type="text"
+                   id="endDate"
+                   placeholder="Datepicker"
+                   class="form-control"
+                   (bsValueChange)="onDateChanged($event, 'end')"
+                   [minDate]="minDate"
+                   [maxDate]="maxDate"
+                   bsDatepicker
+                   [bsConfig]="configDateTimePicker">
+          </div>
+          <!--            <textarea id="fecha" name="message" class="form-control" [(ngModel)]="formData.dateFrom" required></textarea>-->
+        </div>
+      </div>
+      <div *ngFor="let alert of alerts">
+        <alert [type]="alert.type" [dismissOnTimeout]="alert.timeout" (onClosed)="onClosed(alert)">{{ alert.msg }}</alert>
+      </div>
+      <div class="row footer-btn">
+        <div class="col-8"></div>
+        <div class="col-4 container-btn">
+          <button type="submit" class="btn btn-light btn-modal" (click)="modalRef?.hide()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modal">Agregar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</ng-template>

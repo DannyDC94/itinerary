@@ -8,3 +8,29 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+:root {
+  --color-primary: #1b61c8;
+}
+
+.modal-dialog {
+  height: 100vh !important;
+  width: 100vw !important;
+  top: 0;
+  left: 0;
+  margin: 0;
+  background-color: #ffffff;
+  float: right;
+}
+
+.modal-content {
+  height: 100%;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+}
+
+.mat-typography h1 {
+  font-size: 2rem;
+}
