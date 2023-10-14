@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import { environment } from '../../../environments/environment';
 import { AlertComponent } from 'ngx-bootstrap/alert';
 import { Utils } from '../../utils/utils'
+import { MOCK_DATA } from '../../data/mock-data'
 import {
   CdkDragDrop,
   moveItemInArray,
@@ -28,6 +29,7 @@ export class TaskComponent {
   maxDate: Date;
   taskSelected: any;
   imgAdd: string = '';
+  rowImage: string = '';
   modeModal: string = 'create';
   createUpdate: boolean = false;
   configDateTimePicker = {
@@ -52,56 +54,14 @@ export class TaskComponent {
   ngOnInit(): void {
     this.utils = new Utils();
     this.imgAdd = './assets/imgs/add-task.svg';
-    this.tasks = [
-      {
-        activityId: this.utils.generateId(),
-        title: 'Subida al cerro',
-        type: "ACTIVITY",
-        startDate: '2023-10-15 00:00:00',
-        endDate: '2023-10-16 01:00:00',
-        status: 'IN_PROGRESS'
-      },
-      {
-        activityId: this.utils.generateId(),
-        title: 'Fiesta de espuma',
-        type: "PARTY",
-        startDate: '2023-10-14 00:00:00',
-        endDate: '2023-10-16 01:00:00',
-        status: 'DONE'
-      },
-      {
-        activityId: this.utils.generateId(),
-        title: 'Desayuno',
-        type: "FOOD",
-        startDate: null,
-        endDate: null,
-        status: null
-      },
-      {
-        activityId: this.utils.generateId(),
-        title: 'Fiesta de vaga',
-        type: "PARTY",
-        startDate: '2023-10-15 03:00:00',
-        endDate: '2023-10-18 04:00:00',
-        status: 'DONE'
-      },
-      {
-        activityId: this.utils.generateId(),
-        title: 'Almuerzo',
-        type: "FOOD",
-        startDate: null,
-        endDate: null,
-        status: null
-      },
-      {
-        activityId: this.utils.generateId(),
-        title: 'Junta Presidencial',
-        type: "PARTY",
-        startDate: '2023-10-15 01:00:00',
-        endDate: '2023-10-18 02:00:00',
-        status: 'DONE'
-      }
-    ];
+    this.rowImage = './assets/imgs/row-right.svg';
+    let taskStorage = localStorage.getItem('tasks');
+    if (taskStorage) {
+      this.tasks = JSON.parse(taskStorage);
+    } else {
+      this.tasks = MOCK_DATA;
+    }
+
     this.buildListTasks();
     this.getArrayDateList();
   }
@@ -117,7 +77,24 @@ export class TaskComponent {
     return nextDates;
   }
 
-  drop(event: CdkDragDrop<string[]>) {
+  drop(event: CdkDragDrop<string[]>, item: any, template: TemplateRef<any>) {
+    console.log(event, item);
+    const dropItem:any = event.previousContainer.data[event.previousIndex];
+    console.log(dropItem);
+    const columnItems: any[] = event.container.data;
+    const duplicateItem = columnItems.findIndex(i => i.id === dropItem.id);
+    if (duplicateItem > -1) {
+      this.openModalAlert(template)
+      return;
+    }
+    if (!dropItem.dateTask) {
+      let taskEdit = this.tasks.find(t => t.activityId === dropItem.id);
+      taskEdit.startDate = item.title + ' 00:00:00';
+      taskEdit.endDate = item.title + ' 00:00:00';
+      this.tasks.map((taskState) => taskState.activityId === taskEdit.activityId ? taskEdit : taskState);
+      localStorage.setItem('tasks', JSON.stringify(this.tasks));
+      this.buildListTasks();
+    }
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
@@ -229,7 +206,6 @@ export class TaskComponent {
         this.list.push(taskTemp);
     })
     this.list = this.orderTaskByHour(this.list);
-    console.log(this.list);
   }
 
   orderTask (tasks: any[]) {
@@ -310,13 +286,13 @@ export class TaskComponent {
       status: startDate === '' ? null : 'IN_PROGRESS'
     };
     this.tasks.push(newTask);
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
     this.cleanForm();
     this.buildListTasks();
     this.hideModal();
   }
 
   viewTask(template: TemplateRef<any>, task: any) {
-    console.log(task);
     this.taskSelected = task;
     if (task.dateTask) {
       this.createUpdate = false;
@@ -341,6 +317,7 @@ export class TaskComponent {
     taskEdit.startDate = startDate;
     taskEdit.endDate = endDate;
     this.tasks.map((taskState) => taskState.activityId === taskEdit.activityId ? taskEdit : taskState);
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
     this.cleanForm();
     this.buildListTasks();
     this.hideModal();
@@ -355,9 +332,14 @@ export class TaskComponent {
     this.modalRef = this.modalService.show(template, {class: 'modal-sm'});
   }
 
+  openModalAlert(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template);
+  }
+
   confirmDelete(): void {
     this.modalRef?.hide();
-    this.tasks = this.tasks.filter(t => t.activityId !== this.taskSelected.id)
+    this.tasks = this.tasks.filter(t => t.activityId !== this.taskSelected.id);
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
     this.buildListTasks();
     this.taskSelected = null;
   }

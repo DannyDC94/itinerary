@@ -1,9 +1,9 @@
 <header>
   <div class="row">
-    <div class="col-10">
+    <div class="col-8">
       <h2>Itinerario</h2>
     </div>
-    <div class="col-2">
+    <div class="col-4" style="text-align: right;">
       <button type="button" class="btn btn-primary" (click)="openModal(template)">
         <img style="width: 1.3rem; margin-right: 0.4rem;" [src]="imgAdd"/>Nueva actividad
       </button>
@@ -21,7 +21,7 @@
         cdkDropList
         [cdkDropListData]="item.task"
         class="example-list"
-        (cdkDropListDropped)="drop($event)">
+        (cdkDropListDropped)="drop($event, item, templateAlert)">
         <div class="example-box" *ngFor="let t of item.task" cdkDrag>
           <div style="width: 100%; display: flex;">
             <div class="col-8">
@@ -49,78 +49,88 @@
 <!--Modal-->
 <ng-template #template>
   <div class="modal-header">
-    <h4 id="dialog-child-name" class="modal-title pull-left">Agregar nueva actividad</h4>
+    <h4 id="dialog-child-name" class="modal-title pull-left"><img style="width: 1.3rem; margin-right: 0.4rem;" [src]="rowImage"/>Agregar nueva actividad</h4>
   </div>
   <div class="modal-body">
     <form #contactForm="ngForm">
       <div class="row">
-        <div class="form-group">
-          <label for="name">Nombre de la actividad</label>
-          <input type="text" id="name" name="name" class="form-control" [(ngModel)]="formData.name" required>
+        <div class="form-group space-form">
+          <label for="name" class="text-label">Nombre de la actividad</label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="Busca una actividad o crea una nueva..." [(ngModel)]="formData.name" required>
         </div>
-        <div *ngIf="modeModal==='create'" class="row">
-          <div class="form-group">
-            <label for="startDate">Fecha de inicio</label>
-            <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
-              <input type="text"
-                     id="startDate"
-                     placeholder="Datepicker"
-                     class="form-control"
-                     (bsValueChange)="onDateChanged($event, 'start')"
-                     [minDate]="minDate"
-                     [maxDate]="maxDate"
-                     bsDatepicker
-                     [bsConfig]="configDateTimePicker">
+        <div *ngIf="modeModal==='create'" class="row space-date">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="startDate" class="text-label">Fecha de inicio</label>
+              <div class="col-12">
+                <input type="text"
+                       id="startDate"
+                       placeholder="Ingrese la fecha"
+                       class="form-control"
+                       (bsValueChange)="onDateChanged($event, 'start')"
+                       [minDate]="minDate"
+                       [maxDate]="maxDate"
+                       bsDatepicker
+                       [bsConfig]="configDateTimePicker">
+              </div>
             </div>
           </div>
-          <div class="form-group">
-            <label for="endDate">Fecha de finalizacion</label>
-            <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
-              <input type="text"
-                     id="endDate"
-                     placeholder="Datepicker"
-                     class="form-control"
-                     (bsValueChange)="onDateChanged($event, 'end')"
-                     [minDate]="minDate"
-                     [maxDate]="maxDate"
-                     bsDatepicker
-                     [bsConfig]="configDateTimePicker">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="endDate" class="text-label">Fecha de finalizacion</label>
+              <div class="col-12">
+                <input type="text"
+                       id="endDate"
+                       placeholder="Ingrese la fecha"
+                       class="form-control"
+                       (bsValueChange)="onDateChanged($event, 'end')"
+                       [minDate]="minDate"
+                       [maxDate]="maxDate"
+                       bsDatepicker
+                       [bsConfig]="configDateTimePicker">
+              </div>
             </div>
           </div>
         </div>
-        <div *ngIf="modeModal==='update'" class="row">
-          <div class="form-group">
-            <label for="startDateEdit">Fecha de inicio update</label>
-            <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
-              <input type="text"
-                     id="startDateEdit"
-                     placeholder="Datepicker"
-                     class="form-control"
-                     (bsValueChange)="onDateChanged($event, 'start')"
-                     [minDate]="minDate"
-                     [maxDate]="maxDate"
-                     bsDatepicker
-                     [bsValue]="formData.startDateEdit"
-                     [bsConfig]="configDateTimePicker">
+        <div *ngIf="modeModal==='update'" class="row space-date">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="startDateEdit" class="text-label">Fecha de inicio</label>
+              <div class="col-12">
+                <input type="text"
+                       id="startDateEdit"
+                       placeholder="Ingrese la fecha"
+                       class="form-control"
+                       (bsValueChange)="onDateChanged($event, 'start')"
+                       [minDate]="minDate"
+                       [maxDate]="maxDate"
+                       bsDatepicker
+                       [bsValue]="formData.startDateEdit"
+                       [bsConfig]="configDateTimePicker">
+              </div>
             </div>
           </div>
-          <div class="form-group">
-            <label for="endDateEdit">Fecha de finalizacion</label>
-            <div class="col-xs-12 col-12 col-md-4 form-group mb-3">
-              <input type="text"
-                     id="endDateEdit"
-                     placeholder="Datepicker"
-                     class="form-control"
-                     (bsValueChange)="onDateChanged($event, 'end')"
-                     [minDate]="minDate"
-                     [maxDate]="maxDate"
-                     bsDatepicker
-                     [bsValue]="formData.endDateEdit"
-                     [bsConfig]="configDateTimePicker">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="endDateEdit" class="text-label">Fecha de finalizacion</label>
+              <div class="col-12">
+                <input type="text"
+                       id="endDateEdit"
+                       placeholder="Ingrese la fecha"
+                       class="form-control"
+                       (bsValueChange)="onDateChanged($event, 'end')"
+                       [minDate]="minDate"
+                       [maxDate]="maxDate"
+                       bsDatepicker
+                       [bsValue]="formData.endDateEdit"
+                       [bsConfig]="configDateTimePicker">
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <br>
+      <br>
       <div *ngFor="let alert of alerts">
         <alert [type]="alert.type" [dismissOnTimeout]="alert.timeout" (onClosed)="onClosed(alert)">{{ alert.msg }}</alert>
       </div>
@@ -140,5 +150,17 @@
     <p>Estas seguro de eliminar la tarea? Si eliminas la tarea se borraran todas las tareas consecutivas en el itinerario</p>
     <button type="button" style="margin-right: 1rem" class="btn btn-light" (click)="declineDelete()" >No</button>
     <button type="button" class="btn btn-primary" (click)="confirmDelete()" >Sí</button>
+  </div>
+</ng-template>
+
+<ng-template #templateAlert>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Advertencia</h4>
+    <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+      <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    No se puede agregar la tarea en la columna debido a que ya existe otra tarea similar
   </div>
 </ng-template>
