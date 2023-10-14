@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { AlertModule } from 'ngx-bootstrap/alert';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 
 @NgModule({
   declarations: [
@@ -28,7 +30,9 @@ import { AlertModule } from 'ngx-bootstrap/alert';
     ModalModule,
     FormsModule,
     BsDatepickerModule,
-    AlertModule
+    AlertModule,
+    MatButtonModule,
+    MatIconModule
   ],
   providers: [BsModalService],
   bootstrap: [AppComponent]

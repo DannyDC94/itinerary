@@ -13,7 +13,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   --color-primary: #1b61c8;
 }
 
-.modal-dialog {
+.modal-full {
   height: 100vh !important;
   width: 100vw !important;
   top: 0;
@@ -33,4 +33,18 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .mat-typography h1 {
   font-size: 2rem;
+}
+
+.cdk-drag example-box {
+  .col-10 {
+    padding-right: 0 !important;
+  }
+}
+
+.mat-icon {
+  zoom: 0.8;
+}
+
+.mdc-icon-button {
+  padding: 0;
 }

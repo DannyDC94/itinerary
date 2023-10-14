@@ -5,7 +5,6 @@ import { DateTime } from "luxon";
 import { environment } from '../../../environments/environment';
 import { AlertComponent } from 'ngx-bootstrap/alert';
 import { Utils } from '../../utils/utils'
-
 import {
   CdkDragDrop,
   moveItemInArray,
@@ -20,13 +19,17 @@ import {
 
 export class TaskComponent {
   @ViewChild('childModal', { static: false }) childModal?: ModalDirective;
-  formData: { name: string, startDate: string, endDate:string } = { name: '', startDate: '', endDate: ''};
+  formData: { name: string, startDate: string, endDate:string, startDateEdit:Date, endDateEdit:Date };
   alerts: any[] = [];
   list: any[] = [];
   utils: any;
   tasks: any[] = [];
   minDate: Date;
   maxDate: Date;
+  taskSelected: any;
+  imgAdd: string = '';
+  modeModal: string = 'create';
+  createUpdate: boolean = false;
   configDateTimePicker = {
     isAnimated: true,
     keepDatepickerOpened: true,
@@ -37,16 +40,18 @@ export class TaskComponent {
   configModal = {
     backdrop: true,
     ignoreBackdropClick: true,
-    class: 'modal-lg'
+    class: 'modal-lg modal-full'
   };
 
   constructor(private modalService: BsModalService) {
     this.minDate = new Date();
     this.maxDate = new Date();
+    this.formData = { name: '', startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()}
     this.maxDate.setDate(this.maxDate.getDate() + environment.limitDaysTask - 1);
   }
   ngOnInit(): void {
     this.utils = new Utils();
+    this.imgAdd = './assets/imgs/add-task.svg';
     this.tasks = [
       {
         activityId: this.utils.generateId(),
@@ -97,7 +102,6 @@ export class TaskComponent {
         status: 'DONE'
       }
     ];
-    console.log(this.tasks);
     this.buildListTasks();
     this.getArrayDateList();
   }
@@ -148,16 +152,23 @@ export class TaskComponent {
         let hour = '';
         let hourStart = '';
         if (t.startDate) {
-          hour += t.startDate.split(' ')[1]
+          const hora = DateTime.fromISO(t.startDate.split(' ')[1]);
+          const horaFormateada = hora.toFormat("HH:mm");
+          hour += horaFormateada;
           hourStart = t.startDate.split(' ')[1]
         }
-        if (t.endDate)
-          hour += ' - ' + t.endDate.split(' ')[1]
+        if (t.endDate) {
+          const hora = DateTime.fromISO(t.endDate.split(' ')[1]);
+          const horaFormateada = hora.toFormat("HH:mm");
+          hour += ' - ' + horaFormateada;
+        }
         const newTask = {
           id: t.activityId,
           title: t.title,
           type: "FOOD",
           dateTask: t.startDate === null ? '' : t.startDate.split(' ')[0],
+          fromDate: t.startDate,
+          toDate: t.endDate,
           hourTask: hour,
           hourStart,
           status: null
@@ -175,17 +186,24 @@ export class TaskComponent {
           let hour = '';
           let hourStart = '';
           if (t.startDate) {
-            hour += t.startDate.split(' ')[1]
+            const hora = DateTime.fromISO(t.startDate.split(' ')[1]);
+            const horaFormateada = hora.toFormat("HH:mm");
+            hour += horaFormateada
             hourStart = t.startDate.split(' ')[1]
           }
-          if (t.endDate)
-            hour += ' - ' + t.endDate.split(' ')[1]
+          if (t.endDate) {
+            const hora = DateTime.fromISO(t.endDate.split(' ')[1]);
+            const horaFormateada = hora.toFormat("HH:mm");
+            hour += ' - ' + horaFormateada;
+          }
           const newTask = {
             id: t.activityId,
             title: t.title,
             type: "FOOD",
             dateTask: dateT,
             hourTask: hour,
+            fromDate: t.startDate,
+            toDate: t.endDate,
             hourStart,
             status: null
           }
@@ -230,20 +248,59 @@ export class TaskComponent {
         const horaB = b.hourStart;
         return horaA.localeCompare(horaB);
       });
+      const dateFormat = DateTime.fromISO(t.title);
+      t.count = t.task.length
+      t.showDate = t.title ? dateFormat.toFormat("dd 'de' LLLL") : t.title
+      t.showHour = t.title ? dateFormat.toFormat("dd 'de' LLLL") : t.title
     })
     return tasks;
   }
 
-  submitForm() {
-    const {name, startDate, endDate} = this.formData;
+  validateForm(dataForm: any): boolean {
+    const {name, startDate, endDate} = dataForm;
     if (!name) {
       this.alerts.push({
         type: 'warning',
-        msg: `El campo Nombre de la actividad es requerido`,
+        msg: 'El campo Nombre de la actividad es requerido',
         timeout: 2000
       });
-      return;
+      return false;
     }
+    if (startDate && endDate) {
+      const dateFrom = DateTime.fromFormat(startDate, "yyyy-MM-dd HH:mm:ss");
+      const dateTo = DateTime.fromFormat(endDate, "yyyy-MM-dd HH:mm:ss");
+      if (dateTo < dateFrom) {
+        this.alerts.push({
+          type: 'warning',
+          msg: 'La fecha de finalización no puede ser menor a la fecha de inicio',
+          timeout: 2000
+        });
+        return false;
+      }
+    }
+    if (startDate && !endDate) {
+      this.alerts.push({
+        type: 'warning',
+        msg: 'Seleccione la fecha de finalización para guardar',
+        timeout: 2000
+      });
+      return false;
+    }
+    if (!startDate && endDate) {
+      this.alerts.push({
+        type: 'warning',
+        msg: 'Seleccione la fecha de inicio para guardar',
+        timeout: 2000
+      });
+      return false;
+    }
+    return true;
+  }
+
+  submitForm() {
+    const {name, startDate, endDate} = this.formData;
+    const valid: boolean = this.validateForm(this.formData);
+    if (!valid) return;
     const newTask = {
       activityId: this.utils.generateId(),
       title: name,
@@ -253,20 +310,83 @@ export class TaskComponent {
       status: startDate === '' ? null : 'IN_PROGRESS'
     };
     this.tasks.push(newTask);
+    this.cleanForm();
     this.buildListTasks();
     this.hideModal();
+  }
+
+  viewTask(template: TemplateRef<any>, task: any) {
+    console.log(task);
+    this.taskSelected = task;
+    if (task.dateTask) {
+      this.createUpdate = false;
+      this.openModal(template);
+      this.modeModal = 'update';
+      const fromDate = DateTime.fromFormat(task.fromDate, "yyyy-MM-dd HH:mm:ss");
+      const from = new Date(fromDate.valueOf());
+      const toDate = DateTime.fromFormat(task.toDate, "yyyy-MM-dd HH:mm:ss");
+      const to = new Date(toDate.valueOf());
+      this.formData  = { name: task.title, startDate: task.fromDate, endDate: task.toDate, startDateEdit: from, endDateEdit: to };
+    } else {
+      this.createUpdate = true;
+      this.openModal(template, this.createUpdate);
+    }
+  }
+  editTask() {
+    const {name, startDate, endDate} = this.formData;
+    const valid: boolean = this.validateForm(this.formData);
+    if (!valid) return;
+    let taskEdit = this.tasks.find(t => t.activityId === this.taskSelected.id);
+    taskEdit.title = name;
+    taskEdit.startDate = startDate;
+    taskEdit.endDate = endDate;
+    this.tasks.map((taskState) => taskState.activityId === taskEdit.activityId ? taskEdit : taskState);
+    this.cleanForm();
+    this.buildListTasks();
+    this.hideModal();
+  }
+
+  deleteTask(template: TemplateRef<any>, task: any) {
+    this.taskSelected = task;
+    this.openModalConfirm(template);
+  }
+
+  openModalConfirm(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template, {class: 'modal-sm'});
+  }
+
+  confirmDelete(): void {
+    this.modalRef?.hide();
+    this.tasks = this.tasks.filter(t => t.activityId !== this.taskSelected.id)
+    this.buildListTasks();
+    this.taskSelected = null;
+  }
+
+  declineDelete(): void {
+    this.modalRef?.hide();
+    this.taskSelected = null;
+  }
+
+  cleanForm() {
+    this.formData  = { name: '', startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()};
   }
 
   onClosed(dismissedAlert: AlertComponent): void {
     this.alerts = this.alerts.filter(alert => alert !== dismissedAlert);
   }
 
-  openModal(template: TemplateRef<any>) {
+  openModal(template: TemplateRef<any>, flag: boolean = false) {
+    this.modeModal = 'create';
+    if (!flag)
+      this.cleanForm();
+    else
+      this.formData  = { name: this.taskSelected.title, startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()};
     this.modalRef = this.modalService.show(template, this.configModal);
   }
 
   hideModal(): void {
     this.modalRef?.hide();
+    this.alerts = [];
   }
 
   onDateChanged(event: Date, from: string) {
