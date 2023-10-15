@@ -1,7 +1,7 @@
 import { Utils } from '../utils/utils'
-
+import {Task} from "../models/itinerary.model";
 const utils = new Utils();
-export const MOCK_DATA = [
+export const MOCK_DATA: Array<Task> = [
   {
     activityId: utils.generateId(),
     title: 'Subida al cerro',

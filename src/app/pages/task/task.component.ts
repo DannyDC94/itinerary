@@ -6,11 +6,8 @@ import { environment } from '../../../environments/environment';
 import { AlertComponent } from 'ngx-bootstrap/alert';
 import { Utils } from '../../utils/utils'
 import { MOCK_DATA } from '../../data/mock-data'
-import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem,} from '@angular/cdk/drag-drop';
+import {Task} from "../../models/itinerary.model";
 
 @Component({
   selector: 'app-task',
@@ -23,8 +20,9 @@ export class TaskComponent {
   formData: { name: string, startDate: string, endDate:string, startDateEdit:Date, endDateEdit:Date };
   alerts: any[] = [];
   list: any[] = [];
+  allTaskInv: any[] = [];
   utils: any;
-  tasks: any[] = [];
+  tasks: Array<Task> = [];
   minDate: Date;
   maxDate: Date;
   taskSelected: any;
@@ -79,7 +77,7 @@ export class TaskComponent {
 
   drop(event: CdkDragDrop<string[]>, item: any, template: TemplateRef<any>) {
     console.log(event, item);
-    const dropItem:any = event.previousContainer.data[event.previousIndex];
+    const dropItem: any = event.previousContainer.data[event.previousIndex];
     console.log(dropItem);
     const columnItems: any[] = event.container.data;
     const duplicateItem = columnItems.findIndex(i => i.id === dropItem.id);
@@ -87,14 +85,22 @@ export class TaskComponent {
       this.openModalAlert(template)
       return;
     }
-    if (!dropItem.dateTask) {
-      let taskEdit = this.tasks.find(t => t.activityId === dropItem.id);
-      taskEdit.startDate = item.title + ' 00:00:00';
-      taskEdit.endDate = item.title + ' 00:00:00';
-      this.tasks.map((taskState) => taskState.activityId === taskEdit.activityId ? taskEdit : taskState);
-      localStorage.setItem('tasks', JSON.stringify(this.tasks));
-      this.buildListTasks();
-    }
+    const count = this.allTaskInv.filter(at => at.id === dropItem.id).length;
+    if (!dropItem.dateTask || count === 1) {
+      let taskEdit: Task | undefined = this.tasks.find(t => t.activityId === dropItem.id);
+      if (taskEdit) {
+        let {activityId} = taskEdit;
+        taskEdit.startDate = item.title + ' 00:00:00';
+        taskEdit.endDate = item.title + ' 00:00:00';
+        this.tasks.map((taskState: Task) => taskState.activityId === activityId ? taskEdit : taskState);
+        localStorage.setItem('tasks', JSON.stringify(this.tasks));
+        this.buildListTasks();
+      }
+    } else {}
+    this.moveDragAndDrop(event)
+  }
+
+  moveDragAndDrop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
@@ -189,6 +195,7 @@ export class TaskComponent {
       }
     })
     const tasksTemp = this.orderTask(allTask);
+    this.allTaskInv = tasksTemp;
     this.buildListItinerary(tasksTemp);
   }
 
@@ -277,7 +284,7 @@ export class TaskComponent {
     const {name, startDate, endDate} = this.formData;
     const valid: boolean = this.validateForm(this.formData);
     if (!valid) return;
-    const newTask = {
+    const newTask: Task = {
       activityId: this.utils.generateId(),
       title: name,
       type: "FOOD",
@@ -312,15 +319,19 @@ export class TaskComponent {
     const {name, startDate, endDate} = this.formData;
     const valid: boolean = this.validateForm(this.formData);
     if (!valid) return;
-    let taskEdit = this.tasks.find(t => t.activityId === this.taskSelected.id);
-    taskEdit.title = name;
-    taskEdit.startDate = startDate;
-    taskEdit.endDate = endDate;
-    this.tasks.map((taskState) => taskState.activityId === taskEdit.activityId ? taskEdit : taskState);
-    localStorage.setItem('tasks', JSON.stringify(this.tasks));
-    this.cleanForm();
-    this.buildListTasks();
-    this.hideModal();
+    let taskEdit: Task | undefined = this.tasks.find(t => t.activityId === this.taskSelected.id);
+    if (taskEdit) {
+      let {activityId} = taskEdit;
+      taskEdit.title = name;
+      taskEdit.startDate = startDate;
+      taskEdit.endDate = endDate;
+      this.tasks.map((taskState) => taskState.activityId === activityId ? taskEdit : taskState);
+      localStorage.setItem('tasks', JSON.stringify(this.tasks));
+      this.cleanForm();
+      this.taskSelected = null;
+      this.buildListTasks();
+      this.hideModal();
+    }
   }
 
   deleteTask(template: TemplateRef<any>, task: any) {
