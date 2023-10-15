@@ -1,6 +1,7 @@
 export interface Activity {
   id: number,
-  name: string
+  name: string,
+  image: string
 }
 export interface Status {
   id: number,

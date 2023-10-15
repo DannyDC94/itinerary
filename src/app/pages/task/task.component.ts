@@ -5,9 +5,9 @@ import { DateTime } from "luxon";
 import { environment } from '../../../environments/environment';
 import { AlertComponent } from 'ngx-bootstrap/alert';
 import { Utils } from '../../utils/utils'
-import { MOCK_DATA } from '../../data/mock-data'
+import { MOCK_DATA, MOCK_ACTIVITIES, MOCK_STATUS } from '../../data/mock-data'
 import { CdkDragDrop, moveItemInArray, transferArrayItem,} from '@angular/cdk/drag-drop';
-import {Task} from "../../models/itinerary.model";
+import {Activity, Task} from "../../models/itinerary.model";
 
 @Component({
   selector: 'app-task',
@@ -148,13 +148,14 @@ export class TaskComponent {
         const newTask = {
           id: t.activityId,
           title: t.title,
-          type: "FOOD",
+          type: t.type,
+          image: this.getImageByType(t.type),
           dateTask: t.startDate === null ? '' : t.startDate.split(' ')[0],
           fromDate: t.startDate,
           toDate: t.endDate,
           hourTask: hour,
           hourStart,
-          status: null
+          status: this.getDescriptionByStatus(t.status)
         }
         allTask.push(newTask);
       } else {
@@ -182,13 +183,14 @@ export class TaskComponent {
           const newTask = {
             id: t.activityId,
             title: t.title,
-            type: "FOOD",
+            type: t.type,
+            image: this.getImageByType(t.type),
             dateTask: dateT,
             hourTask: hour,
             fromDate: t.startDate,
             toDate: t.endDate,
             hourStart,
-            status: null
+            status: this.getDescriptionByStatus(t.status)
           }
           allTask.push(newTask);
         });
@@ -197,6 +199,16 @@ export class TaskComponent {
     const tasksTemp = this.orderTask(allTask);
     this.allTaskInv = tasksTemp;
     this.buildListItinerary(tasksTemp);
+  }
+
+  getImageByType(type: string): string {
+    const activity = MOCK_ACTIVITIES.find(act => act.name === type);
+    return (activity ? activity.image : MOCK_ACTIVITIES[0].image);
+  }
+
+  getDescriptionByStatus(status: string | null): string {
+    const description = MOCK_STATUS.find(mStatus => mStatus.name === status);
+    return (description ? description.description : MOCK_STATUS[0].description);
   }
 
   buildListItinerary(tasks: any[]) {
