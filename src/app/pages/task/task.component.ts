@@ -28,13 +28,18 @@ export class TaskComponent {
   taskSelected: any;
   imgAdd: string = '';
   rowImage: string = '';
+  imgMessage: string = '';
   modeModal: string = 'create';
   createUpdate: boolean = false;
+  createInColumn: boolean = false;
+  activities: any[] = [];
+  selectedAct: string = '0';
   configDateTimePicker = {
     isAnimated: true,
     keepDatepickerOpened: true,
     withTimepicker: true,
-    dateInputFormat: 'YYYY/MM/DD, HH:mm:ss'
+    dateInputFormat: 'YYYY/MM/DD, HH:mm:ss',
+    containerClass: 'theme-dark-blue'
   }
   modalRef?: BsModalRef;
   configModal = {
@@ -47,12 +52,15 @@ export class TaskComponent {
     this.minDate = new Date();
     this.maxDate = new Date();
     this.formData = { name: '', startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()}
-    this.maxDate.setDate(this.maxDate.getDate() + environment.limitDaysTask - 1);
+    this.setMaxDate();
   }
   ngOnInit(): void {
     this.utils = new Utils();
     this.imgAdd = './assets/imgs/add-task.svg';
     this.rowImage = './assets/imgs/row-right.svg';
+    this.imgMessage = './assets/imgs/message.png';
+    this.activities = MOCK_ACTIVITIES;
+    this.selectedAct = '0';
     let taskStorage = localStorage.getItem('tasks');
     if (taskStorage) {
       this.tasks = JSON.parse(taskStorage);
@@ -62,6 +70,16 @@ export class TaskComponent {
 
     this.buildListTasks();
     this.getArrayDateList();
+  }
+
+  setMinDate(minDate: Date = new Date()) {
+    this.minDate = minDate;
+    // this.maxDate.setDate(this.minDate.getDate())
+  }
+
+  setMaxDate(numDays: number = environment.limitDaysTask, maxDate: Date = new Date()) {
+    this.maxDate = maxDate;
+    this.maxDate.setDate(this.maxDate.getDate() + numDays - 1);
   }
 
   getArrayDateList() {
@@ -76,9 +94,9 @@ export class TaskComponent {
   }
 
   drop(event: CdkDragDrop<string[]>, item: any, template: TemplateRef<any>) {
-    console.log(event, item);
+    // console.log(event, item);
     const dropItem: any = event.previousContainer.data[event.previousIndex];
-    console.log(dropItem);
+    // console.log(dropItem);
     const columnItems: any[] = event.container.data;
     const duplicateItem = columnItems.findIndex(i => i.id === dropItem.id);
     if (duplicateItem > -1) {
@@ -90,8 +108,8 @@ export class TaskComponent {
       let taskEdit: Task | undefined = this.tasks.find(t => t.activityId === dropItem.id);
       if (taskEdit) {
         let {activityId} = taskEdit;
-        taskEdit.startDate = item.title + ' 00:00:00';
-        taskEdit.endDate = item.title + ' 00:00:00';
+        taskEdit.startDate = item.title ? item.title + ' ' + (dropItem.hourTask ? dropItem.hourStart : '00:00:00') : item.title;
+        taskEdit.endDate = item.title ? item.title + ' ' + (dropItem.hourTask ? dropItem.hourEnd : '00:00:00') : item.title;
         this.tasks.map((taskState: Task) => taskState.activityId === activityId ? taskEdit : taskState);
         localStorage.setItem('tasks', JSON.stringify(this.tasks));
         this.buildListTasks();
@@ -111,6 +129,11 @@ export class TaskComponent {
         event.currentIndex,
       );
     }
+  }
+
+  loadSelectActivity(type:string) {
+    const activity = this.activities.find(ac => ac.name === type);
+    this.selectedAct = activity.id;
   }
   buildListTasks() {
     this.list = [];
@@ -134,6 +157,7 @@ export class TaskComponent {
       if (diferenciaEnDias === 0 || diferenciaEnDias === undefined) {
         let hour = '';
         let hourStart = '';
+        let hourEnd = '';
         if (t.startDate) {
           const hora = DateTime.fromISO(t.startDate.split(' ')[1]);
           const horaFormateada = hora.toFormat("HH:mm");
@@ -144,6 +168,7 @@ export class TaskComponent {
           const hora = DateTime.fromISO(t.endDate.split(' ')[1]);
           const horaFormateada = hora.toFormat("HH:mm");
           hour += ' - ' + horaFormateada;
+          hourEnd = t.endDate.split(' ')[1]
         }
         const newTask = {
           id: t.activityId,
@@ -155,6 +180,7 @@ export class TaskComponent {
           toDate: t.endDate,
           hourTask: hour,
           hourStart,
+          hourEnd,
           status: this.getDescriptionByStatus(t.status)
         }
         allTask.push(newTask);
@@ -169,6 +195,7 @@ export class TaskComponent {
         dateRange.map(dateT => {
           let hour = '';
           let hourStart = '';
+          let hourEnd = '';
           if (t.startDate) {
             const hora = DateTime.fromISO(t.startDate.split(' ')[1]);
             const horaFormateada = hora.toFormat("HH:mm");
@@ -179,6 +206,7 @@ export class TaskComponent {
             const hora = DateTime.fromISO(t.endDate.split(' ')[1]);
             const horaFormateada = hora.toFormat("HH:mm");
             hour += ' - ' + horaFormateada;
+            hourEnd = t.endDate.split(' ')[1]
           }
           const newTask = {
             id: t.activityId,
@@ -190,6 +218,7 @@ export class TaskComponent {
             fromDate: t.startDate,
             toDate: t.endDate,
             hourStart,
+            hourEnd,
             status: this.getDescriptionByStatus(t.status)
           }
           allTask.push(newTask);
@@ -296,13 +325,14 @@ export class TaskComponent {
     const {name, startDate, endDate} = this.formData;
     const valid: boolean = this.validateForm(this.formData);
     if (!valid) return;
+    const activity = this.activities.find(ac => ac.id === parseInt(this.selectedAct));
     const newTask: Task = {
       activityId: this.utils.generateId(),
       title: name,
-      type: "FOOD",
+      type: activity ? activity.name : this.activities[0].name,
       startDate: startDate || null,
       endDate: endDate || null,
-      status: startDate === '' ? null : 'IN_PROGRESS'
+      status: startDate === '' ? null : 'TO_DO'
     };
     this.tasks.push(newTask);
     localStorage.setItem('tasks', JSON.stringify(this.tasks));
@@ -312,19 +342,26 @@ export class TaskComponent {
   }
 
   viewTask(template: TemplateRef<any>, task: any) {
+    this.setMinDate();
+    this.setMaxDate();
     this.taskSelected = task;
+    this.loadSelectActivity(task.type);
     if (task.dateTask) {
-      this.createUpdate = false;
-      this.openModal(template);
+      this.createInColumn = false;
       this.modeModal = 'update';
+      this.createUpdate = false;
       const fromDate = DateTime.fromFormat(task.fromDate, "yyyy-MM-dd HH:mm:ss");
       const from = new Date(fromDate.valueOf());
       const toDate = DateTime.fromFormat(task.toDate, "yyyy-MM-dd HH:mm:ss");
       const to = new Date(toDate.valueOf());
       this.formData  = { name: task.title, startDate: task.fromDate, endDate: task.toDate, startDateEdit: from, endDateEdit: to };
+      this.openModal(template);
     } else {
+      this.modeModal = 'create';
       this.createUpdate = true;
-      this.openModal(template, this.createUpdate);
+      this.createInColumn = false;
+      this.formData  = { name: this.taskSelected.title, startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()};
+      this.openModal(template);
     }
   }
   editTask() {
@@ -334,9 +371,11 @@ export class TaskComponent {
     let taskEdit: Task | undefined = this.tasks.find(t => t.activityId === this.taskSelected.id);
     if (taskEdit) {
       let {activityId} = taskEdit;
+      const activity = this.activities.find(ac => ac.id === parseInt(this.selectedAct));
       taskEdit.title = name;
       taskEdit.startDate = startDate;
       taskEdit.endDate = endDate;
+      taskEdit.type = activity.name;
       this.tasks.map((taskState) => taskState.activityId === activityId ? taskEdit : taskState);
       localStorage.setItem('tasks', JSON.stringify(this.tasks));
       this.cleanForm();
@@ -380,12 +419,35 @@ export class TaskComponent {
     this.alerts = this.alerts.filter(alert => alert !== dismissedAlert);
   }
 
-  openModal(template: TemplateRef<any>, flag: boolean = false) {
+  createTask(template: TemplateRef<any>) {
+    this.cleanForm();
+    this.setMinDate();
+    this.setMaxDate();
+    this.selectedAct = '0';
     this.modeModal = 'create';
-    if (!flag)
-      this.cleanForm();
-    else
-      this.formData  = { name: this.taskSelected.title, startDate: '', endDate: '', startDateEdit: new Date(), endDateEdit: new Date()};
+    this.createUpdate = false;
+    this.createInColumn = false;
+    this.openModal(template);
+  }
+
+  createTaskInColumn(template: TemplateRef<any>, item: any) {
+    this.selectedAct = '0';
+    if (item.showDate) {
+      this.modeModal = 'create';
+      this.createUpdate = false;
+      this.createInColumn = true;
+      const hourCurrent = DateTime.local().toFormat('HH:mm:ss');
+      const dateColumn = new Date(item.title + ' ' + hourCurrent);
+      this.setMinDate(dateColumn);
+      this.setMaxDate(1, dateColumn);
+      this.formData  = { name: '', startDate: '', endDate: '', startDateEdit: dateColumn, endDateEdit: dateColumn};
+      this.openModal(template);
+    } else {
+      this.createTask(template);
+    }
+  }
+
+  openModal(template: TemplateRef<any>,) {
     this.modalRef = this.modalService.show(template, this.configModal);
   }
 

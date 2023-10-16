@@ -35,6 +35,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-size: 2rem;
 }
 
+.mat-typography h2 {
+  font-size: 1.6rem;
+}
+
 .cdk-drag example-box {
   .col-10 {
     padding-right: 0 !important;
@@ -53,4 +57,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background: var(--color-primary);
   color: #ffffff;
   padding-bottom: 0.4rem;
+}
+
+.theme-dark-blue .bs-datepicker-head {
+  background: var(--color-primary);
 }

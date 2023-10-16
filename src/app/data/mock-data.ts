@@ -5,17 +5,17 @@ export const MOCK_DATA: Array<Task> = [
   {
     activityId: utils.generateId(),
     title: 'Subida al cerro',
-    type: "ACTIVITY",
-    startDate: '2023-10-15 00:00:00',
-    endDate: '2023-10-16 01:00:00',
+    type: "EXERCISE",
+    startDate: '2023-10-17 00:00:00',
+    endDate: '2023-10-18 01:00:00',
     status: 'IN_PROGRESS'
   },
   {
     activityId: utils.generateId(),
     title: 'Fiesta de espuma',
     type: "PARTY",
-    startDate: '2023-10-14 00:00:00',
-    endDate: '2023-10-16 01:00:00',
+    startDate: '2023-10-16 00:00:00',
+    endDate: '2023-10-18 01:00:00',
     status: 'DONE'
   },
   {
@@ -28,10 +28,10 @@ export const MOCK_DATA: Array<Task> = [
   },
   {
     activityId: utils.generateId(),
-    title: 'Fiesta de vaga',
+    title: 'Fiesta de oficina',
     type: "PARTY",
-    startDate: '2023-10-15 03:00:00',
-    endDate: '2023-10-18 04:00:00',
+    startDate: '2023-10-17 03:00:00',
+    endDate: '2023-10-19 04:00:00',
     status: 'DONE'
   },
   {
@@ -45,9 +45,9 @@ export const MOCK_DATA: Array<Task> = [
   {
     activityId: utils.generateId(),
     title: 'Junta Presidencial',
-    type: "PARTY",
-    startDate: '2023-10-15 01:00:00',
-    endDate: '2023-10-18 02:00:00',
+    type: "ACTIVITY",
+    startDate: '2023-10-16 01:00:00',
+    endDate: '2023-10-19 02:00:00',
     status: 'DONE'
   }
 ];
@@ -56,36 +56,43 @@ export const MOCK_ACTIVITIES: Array<Activity> = [
   {
     id: 1,
     name: 'OTHER',
+    description: 'Otros',
     image: './assets/imgs/activities/help.png'
   },
   {
     id: 2,
     name: 'FOOD',
+    description: 'Comida',
     image: './assets/imgs/activities/food.png'
   },
   {
     id: 3,
     name: 'ACTIVITY',
+    description: 'Actividad',
     image: './assets/imgs/activities/list.png'
   },
   {
     id: 4,
     name: 'PARTY',
+    description: 'Fiesta',
     image: './assets/imgs/activities/party.png'
   },
   {
     id: 5,
     name: 'WORK',
+    description: 'Trabajo',
     image: './assets/imgs/activities/work.png'
   },
   {
     id: 6,
     name: 'EXERCISE',
+    description: 'Ejercicio',
     image: './assets/imgs/activities/training.png'
   },
   {
     id: 7,
     name: 'TRANSPORT',
+    description: 'Transporte',
     image: './assets/imgs/activities/transport.png'
   }
 ];

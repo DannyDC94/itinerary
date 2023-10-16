@@ -4,7 +4,7 @@
       <h2>Itinerario</h2>
     </div>
     <div class="col-4" style="text-align: right;">
-      <button type="button" class="btn btn-primary" (click)="openModal(template)">
+      <button type="button" class="btn btn-primary" (click)="createTask(template)">
         <img style="width: 1.3rem; margin-right: 0.4rem;" [src]="imgAdd"/>Nueva actividad
       </button>
     </div>
@@ -16,7 +16,11 @@
 <main>
   <div class="container-drop" cdkDropListGroup>
     <div class="example-container" *ngFor="let item of list">
-      <h3 class="title-drag">{{item.showDate || 'Sin fecha asignada'}} <span class="count"> ({{item.count}})</span></h3>
+      <h3 *ngIf="item.showDate" class="title-drag">{{item.showDate}} <span class="count"> ({{item.count}})</span></h3>
+      <div style="display: flex" *ngIf="!item.showDate">
+        <img class="img-none" [src]="imgMessage"/>
+        <h3 class="title-drag">{{'Sin fecha asignada'}} <span class="count"> ({{item.count}})</span></h3>
+      </div>
       <div
         cdkDropList
         [cdkDropListData]="item.task"
@@ -45,7 +49,7 @@
         </div>
       </div>
       <div class="row btn-new">
-        <label>+Nueva</label>
+        <label style="cursor: pointer" (click)="createTaskInColumn(template, item)">+Nueva</label>
       </div>
     </div>
   </div>
@@ -64,7 +68,7 @@
           <label for="name" class="text-label">Nombre de la actividad</label>
           <input type="text" id="name" name="name" class="form-control" placeholder="Busca una actividad o crea una nueva..." [(ngModel)]="formData.name" required>
         </div>
-        <div *ngIf="modeModal==='create'" class="row space-date">
+        <div *ngIf="modeModal==='create' && !createInColumn" class="row space-date">
           <div class="col-6">
             <div class="form-group">
               <label for="startDate" class="text-label">Fecha de inicio</label>
@@ -98,7 +102,7 @@
             </div>
           </div>
         </div>
-        <div *ngIf="modeModal==='update'" class="row space-date">
+        <div *ngIf="modeModal==='update' || createInColumn" class="row space-date">
           <div class="col-6">
             <div class="form-group">
               <label for="startDateEdit" class="text-label">Fecha de inicio</label>
@@ -130,6 +134,21 @@
                        bsDatepicker
                        [bsValue]="formData.endDateEdit"
                        [bsConfig]="configDateTimePicker">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 2rem">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="endDateEdit" class="text-label">Tipo de Actividad</label>
+              <div class="col-12">
+                <form>
+                  <select class="form-select"  name="select" aria-label="Default select example" [(ngModel)]="selectedAct">
+                    <option value="0" disabled selected>Seleccione una actividad</option>
+                    <option *ngFor="let activity of activities" [value]="activity.id">{{activity.description}}</option>
+                  </select>
+                </form>
               </div>
             </div>
           </div>
